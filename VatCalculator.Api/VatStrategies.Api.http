@@ -1,0 +1,13 @@
+@HostAddress = https://localhost:7297
+
+###
+### VAT STRATEGIES – list all
+###
+GET {{HostAddress}}/api/vat/strategies
+Accept: application/json
+
+###
+### VAT STRATEGIES – get by country code
+###
+GET {{HostAddress}}/api/vat/strategies/HU
+Accept: application/json

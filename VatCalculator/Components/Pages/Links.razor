@@ -1,0 +1,36 @@
+﻿@page "/links"
+@using VatCalculator.Shared
+@inject Microsoft.Extensions.Options.IOptions<ApiOptions> Api
+
+<PageTitle>Links - @Constants.ProgramName</PageTitle>
+
+<div class="container py-4">
+    <div class="card shadow-sm border-0 rounded-4 @(IsDarkMode ? "bg-dark text-light" : "bg-white text-dark")">
+        <div class="card-body p-5">
+            <h2 class="fw-bold mb-4 border-bottom pb-3">API Documentation & Links</h2>
+            
+            <div class="list-group list-group-flush">
+                <a href="@($"{Api.Value.BaseUrl}/swagger")" target="_blank" class="@LinkClass">
+                    <i class="bi bi-file-text me-2"></i> Swagger UI
+                </a>
+                <a href="@($"{Api.Value.BaseUrl}/scalar")" target="_blank" class="@LinkClass">
+                    <i class="bi bi-lightning-charge me-2"></i> Scalar UI
+                </a>
+                <a href="@($"{Api.Value.BaseUrl}/openapi/v1.json")" target="_blank" class="@LinkClass">
+                    <i class="bi bi-filetype-json bi-code-curly me-2"></i> OpenAPI Specification (JSON)
+                </a>
+                <a href="@($"{Api.Value.BaseUrl}/openapi/v1.yaml")" target="_blank" class="@LinkClass">
+                    <i class="bi bi-file-earmark-code me-2"></i> OpenAPI Specification (YAML)
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [CascadingParameter(Name = "IsDarkMode")]
+    public bool IsDarkMode { get; set; }
+
+    private string LinkClass => 
+        $"list-group-item list-group-item-action d-flex align-items-center py-3 {(IsDarkMode ? "bg-dark text-light border-secondary" : "bg-white text-dark")}";
+}

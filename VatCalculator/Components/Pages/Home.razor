@@ -1,0 +1,207 @@
+﻿@page "/"
+@using VatCalculator.Shared
+@inject HttpClient Http
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0 rounded-4 @(IsDarkMode ? "bg-dark text-light" : "bg-white text-dark")" 
+                 style="transition: background-color 0.3s, color 0.3s;">
+                
+                <div class="card-body p-4 p-md-5">
+                    
+                    <div class="row mb-4 gy-3 align-items-end">
+                        <div class="col-sm-6">
+                            <label class="form-label small text-uppercase fw-bold opacity-75">Country</label>
+                            <InputSelect @bind-Value="countryCode" 
+                                         class="@($"form-select border-0 shadow-sm {InputClass}")">
+                                @foreach (var s in strategies)
+                                {
+                                    <option value="@s.CountryCode">@s.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="col-sm-6">
+                             <label class="form-label small text-uppercase fw-bold opacity-75">VAT Rate</label>
+                             <div class="d-flex gap-2">
+                                @foreach (var rate in GetCurrentRates())
+                                {
+                                    <input type="radio" class="btn-check" name="vatRate" id="rate-@rate"
+                                           checked="@(vatRate == rate)"
+                                           @onchange="@(() => vatRate = rate)">
+                                    <label class="@($"btn btn-sm flex-fill fw-bold {OutlineBtnClass}")" for="rate-@rate">
+                                        @rate%
+                                    </label>
+                                }
+                             </div>
+                        </div>
+                    </div>
+
+                    <hr class="opacity-25 my-4" />
+
+                    <div class="d-flex flex-column gap-3">
+                        
+                        <div class="@($"input-group shadow-sm rounded-3 overflow-hidden {GroupBorderClass}")">
+                            <div class="@($"input-group-text border-0 {InputAddonClass}")">
+                                <input class="form-check-input mt-0 cursor-pointer" type="radio" name="calcMode" 
+                                       checked="@(mode == CalculationMode.Net)"
+                                       @onchange="@(() => SetMode(CalculationMode.Net))"
+                                       style="transform: scale(1.2);">
+                            </div>
+                            <span class="@($"input-group-text border-0 col-5 col-sm-4 fw-semibold {InputAddonClass}")">Net Price</span>
+                            <input type="number" class="@($"form-control border-0 fw-bold {InputClass}")" 
+                                   @bind="netAmount" 
+                                   disabled="@(mode != CalculationMode.Net)" 
+                                   placeholder="0.00" />
+                        </div>
+
+                        <div class="@($"input-group shadow-sm rounded-3 overflow-hidden {GroupBorderClass}")">
+                            <div class="@($"input-group-text border-0 {InputAddonClass}")">
+                                <input class="form-check-input mt-0 cursor-pointer" type="radio" name="calcMode" 
+                                       checked="@(mode == CalculationMode.Vat)"
+                                       @onchange="@(() => SetMode(CalculationMode.Vat))"
+                                       style="transform: scale(1.2);">
+                            </div>
+                            <span class="@($"input-group-text border-0 col-5 col-sm-4 fw-semibold {InputAddonClass}")">VAT</span>
+                            <input type="number" class="@($"form-control border-0 fw-bold {InputClass}")" 
+                                   @bind="vatAmount" 
+                                   disabled="@(mode != CalculationMode.Vat)" 
+                                   placeholder="0.00" />
+                        </div>
+
+                        <div class="@($"input-group shadow-sm rounded-3 overflow-hidden {GroupBorderClass}")">
+                            <div class="@($"input-group-text border-0 {InputAddonClass}")">
+                                <input class="form-check-input mt-0 cursor-pointer" type="radio" name="calcMode" 
+                                       checked="@(mode == CalculationMode.Gross)"
+                                       @onchange="@(() => SetMode(CalculationMode.Gross))"
+                                       style="transform: scale(1.2);">
+                            </div>
+                            <span class="@($"input-group-text border-0 col-5 col-sm-4 fw-semibold {InputAddonClass}")">Gross Price</span>
+                            <input type="number" class="@($"form-control border-0 fw-bold {InputClass}")" 
+                                   @bind="grossAmount" 
+                                   disabled="@(mode != CalculationMode.Gross)" 
+                                   placeholder="0.00" />
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary w-100 mt-5 py-3 fw-bold shadow-sm text-uppercase tracking-wider hover-scale" 
+                            @onclick="Calculate">
+                        <i class="bi bi-calculator me-2"></i> Calculate
+                    </button>
+
+                    @if (errorMessage != null)
+                    {
+                        <div class="alert alert-danger mt-3 mb-0 border-0 shadow-sm d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i> @errorMessage
+                        </div>
+                    }
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .cursor-pointer { cursor: pointer; }
+    .hover-scale { transition: transform 0.2s; }
+    .hover-scale:hover { transform: translateY(-2px); }
+    .tracking-wider { letter-spacing: 1px; }
+    
+    /* Input disabled styles override */
+    .form-control:disabled { opacity: 0.6; cursor: not-allowed; }
+</style>
+
+@code {
+    // EZ A KULCS: Megkapjuk a Layout-tól az értéket
+    [CascadingParameter(Name = "IsDarkMode")] 
+    public bool IsDarkMode { get; set; }
+
+    // Helper property-k a CSS osztályokhoz
+    private string InputClass => IsDarkMode ? "bg-secondary text-white placeholder-gray" : "bg-light text-dark";
+    private string InputAddonClass => IsDarkMode ? "bg-secondary text-light" : "bg-light text-secondary";
+    private string GroupBorderClass => IsDarkMode ? "border border-secondary" : "border";
+    private string OutlineBtnClass => IsDarkMode ? "btn-outline-light" : "btn-outline-dark";
+
+    private enum CalculationMode { Net, Vat, Gross }
+    private CalculationMode mode = CalculationMode.Net;
+    private List<VatStrategyInfo> strategies = new();
+    
+    private string countryCode = "";
+    private decimal vatRate = 20;
+    
+    private decimal? netAmount;
+    private decimal? vatAmount;
+    private decimal? grossAmount;
+    
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            strategies = await Http.GetFromJsonAsync<List<VatStrategyInfo>>($"{Constants.VatBase}/strategies") ?? [];
+            if (strategies.Any())
+            {
+                var first = strategies.First();
+                countryCode = first.CountryCode;
+                vatRate = first.Rates.FirstOrDefault();
+            }
+        }
+        catch { errorMessage = "Failed to load API data."; }
+    }
+
+    private IEnumerable<decimal> GetCurrentRates() =>
+        strategies.FirstOrDefault(s => s.CountryCode == countryCode)?.Rates ?? [];
+
+    private void SetMode(CalculationMode newMode) => mode = newMode;
+
+    private async Task Calculate()
+    {
+        errorMessage = null;
+        HttpResponseMessage? res = null;
+
+        try 
+        {
+            switch (mode)
+            {
+                case CalculationMode.Net:
+                    if (netAmount == null) return;
+                    var reqNet = new VatCalculationFromNetRequest { Net = netAmount.Value, VatRate = vatRate, CountryCode = countryCode };
+                    res = await Http.PostAsJsonAsync($"{Constants.VatBase}/calculate/from-net", reqNet);
+                    break;
+
+                case CalculationMode.Vat:
+                    if (vatAmount == null) return;
+                    var reqVat = new VatCalculationFromVatRequest { VatAmount = vatAmount.Value, VatRate = vatRate, CountryCode = countryCode };
+                    res = await Http.PostAsJsonAsync($"{Constants.VatBase}/calculate/from-vat", reqVat);
+                    break;
+
+                case CalculationMode.Gross:
+                    if (grossAmount == null) return;
+                    var reqGross = new VatCalculationFromGrossRequest { Gross = grossAmount.Value, VatRate = vatRate, CountryCode = countryCode };
+                    res = await Http.PostAsJsonAsync($"{Constants.VatBase}/calculate/from-gross", reqGross);
+                    break;
+            }
+
+            if (res != null && res.IsSuccessStatusCode)
+            {
+                var result = await res.Content.ReadFromJsonAsync<VatCalculationResponse>();
+                if (result != null)
+                {
+                    netAmount = result.Net;
+                    vatAmount = result.VatAmount;
+                    grossAmount = result.Gross;
+                }
+            }
+            else if (res != null)
+            {
+                errorMessage = $"Error: {res.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+}

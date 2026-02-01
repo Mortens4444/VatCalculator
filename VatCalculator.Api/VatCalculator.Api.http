@@ -1,0 +1,39 @@
+@HostAddress = https://localhost:7297
+
+###
+### VAT – FROM NET
+###
+POST {{HostAddress}}/api/vat/calculate/from-net
+Content-Type: application/json
+
+{
+  "net": 100,
+  "vatRate": 20,
+  "countryCode": "AT"
+}
+
+
+###
+### VAT – FROM GROSS
+###
+POST {{HostAddress}}/api/vat/calculate/from-gross
+Content-Type: application/json
+
+{
+  "gross": 120,
+  "vatRate": 20,
+  "countryCode": "AT"
+}
+
+
+###
+### VAT – FROM VAT
+###
+POST {{HostAddress}}/api/vat/calculate/from-vat
+Content-Type: application/json
+
+{
+  "vatAmount": 20,
+  "vatRate": 20,
+  "countryCode": "AT"
+}

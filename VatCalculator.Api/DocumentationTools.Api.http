@@ -1,0 +1,21 @@
+@HostAddress = https://localhost:7297
+
+###
+### Swagger
+###
+GET {{HostAddress}}/swagger
+
+###
+### Scalar
+###
+GET {{HostAddress}}/scalar/v1
+
+###
+### OpenAPI (JSON)
+###
+GET {{HostAddress}}/openapi/v1.json
+
+###
+### OpenAPI (YAML)
+###
+GET {{HostAddress}}/openapi/v1.yaml

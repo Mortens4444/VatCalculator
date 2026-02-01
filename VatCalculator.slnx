@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="CodeCoverage.ps1" />
+    <File Path="CodeCoverage.sh" />
+    <File Path="codecoverage__.runsettings__" />
+    <File Path="ReadMe.md" />
+  </Folder>
+  <Project Path="VatCalculator.Api.Tests/VatCalculator.Api.Tests.csproj" Id="4dff9704-ccfd-4570-a8c2-47028c0d513a" />
+  <Project Path="VatCalculator.Api/VatCalculator.Api.csproj" />
+  <Project Path="VatCalculator.Shared/VatCalculator.Shared.csproj" />
+  <Project Path="VatCalculator/VatCalculator.csproj">
+    <Deploy />
+  </Project>
+</Solution>

@@ -1,0 +1,73 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page @(_isDarkMode ? "bg-dark text-light" : "bg-light text-dark")" style="min-height: 100vh;">
+<nav class="navbar navbar-expand-lg @(_isDarkMode ? "navbar-dark bg-black border-secondary" : "navbar-light bg-white border-light") shadow-sm border-bottom sticky-top">
+        <div class="container">
+
+            <div class="d-flex gap-3 align-items-center">
+                <NavLink class="nav-link fw-semibold" href="" Match="NavLinkMatch.All">
+                    Calculator
+                </NavLink>
+                <NavLink class="nav-link fw-semibold" href="links">
+                    API Links
+                </NavLink>
+            </div>
+
+            <div class="ms-auto">
+                <button class="btn btn-sm rounded-pill @(_isDarkMode ? "btn-outline-warning" : "btn-outline-primary")" 
+                        @onclick="ToggleTheme" title="Toggle theme">
+                    <i class="bi @(_isDarkMode ? "bi-sun-fill" : "bi-moon-fill")"></i>
+                    <span class="d-none d-sm-inline ms-2">@(_isDarkMode ? "Light" : "Dark")</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container py-5">
+        <ErrorBoundary @ref="_errorBoundary">
+            <ChildContent>
+                <div class="content-wrapper">
+                    <CascadingValue Value="_isDarkMode" Name="IsDarkMode">
+                        @Body
+                    </CascadingValue>
+                </div>
+            </ChildContent>
+            <ErrorContent Context="ex">
+                <div class="alert alert-danger shadow-sm">
+                    <h4 class="alert-heading"><i class="bi bi-exclamation-octagon-fill"></i> Error occurred!</h4>
+                    <p>@ex.Message</p>
+                    <button class="btn btn-outline-danger btn-sm" @onclick="() => _errorBoundary?.Recover()">Újrapróbálkozás</button>
+                </div>
+            </ErrorContent>
+        </ErrorBoundary>
+    </main>
+</div>
+
+<style>
+    .content-wrapper {
+        animation: slideUp 0.4s ease-out;
+    }
+
+    @@keyframes slideUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .nav-link { position: relative; opacity: 0.7; }
+    .nav-link:hover { opacity: 1; }
+    .nav-link.active { opacity: 1; color: var(--bs-primary) !important; font-weight: bold; }
+    .nav-link.active::after {
+        content: ''; position: absolute; bottom: -5px; left: 0; width: 100%; height: 2px; background: var(--bs-primary);
+    }</style>
+
+@code {
+    private bool _isDarkMode = true;
+    private ErrorBoundary? _errorBoundary;
+
+    private void ToggleTheme() => _isDarkMode = !_isDarkMode;
+
+    protected override void OnParametersSet()
+    {
+        _errorBoundary?.Recover();
+    }
+}

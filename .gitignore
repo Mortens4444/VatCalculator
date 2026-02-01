@@ -1,0 +1,8 @@
+.vs/
+**/bin/
+**/obj/
+*.nupkg
+*.exe
+packages/
+**/nuget.config*
+*.bak

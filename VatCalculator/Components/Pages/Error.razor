@@ -1,0 +1,40 @@
+﻿@page "/Error"
+@inject NavigationManager NavManager
+
+<div class="row justify-content-center">
+    <div class="col-md-6 text-center">
+        <div class="card shadow-lg p-5">
+            <div class="mb-4">
+                <i class="bi bi-exclamation-circle text-danger" style="font-size: 4rem;"></i>
+            </div>
+            
+            <h1 class="display-5 text-danger fw-bold">An Error Occurred</h1>
+            
+            <p class="lead mb-4 mt-3">
+                An unexpected error happened while running the application. 
+                Our team has been notified (metaphorically).
+            </p>
+
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary py-2 fw-bold" @onclick="GoHome">
+                    <i class="bi bi-house-door-fill me-2"></i> BACK TO HOME
+                </button>
+                <button class="btn btn-outline-secondary py-2" @onclick="Reload">
+                    <i class="bi bi-arrow-clockwise me-2"></i> TRY AGAIN
+                </button>
+            </div>
+        </div>
+        
+        <p class="text-muted mt-4 small">
+            Error Reference ID: <span class="badge bg-secondary">@_errorId</span>
+        </p>
+    </div>
+</div>
+
+@code {
+    private string _errorId = Guid.NewGuid().ToString().Substring(0, 8).ToUpper();
+
+    private void GoHome() => NavManager.NavigateTo("/net");
+
+    private void Reload() => NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
+}

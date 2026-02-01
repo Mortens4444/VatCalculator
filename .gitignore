@@ -6,3 +6,5 @@
 packages/
 **/nuget.config*
 *.bak
+VatCalculator.Api.Tests/TestResults/
+coveragereport/

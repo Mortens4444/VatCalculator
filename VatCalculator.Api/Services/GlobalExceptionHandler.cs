@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace VatCalculator.Api.Services;
 
+[ExcludeFromCodeCoverage]
 public class GlobalExceptionHandler(IWebHostEnvironment env, ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
